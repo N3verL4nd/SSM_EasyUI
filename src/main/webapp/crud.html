@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>用户管理系统</title>
+    <link rel="stylesheet" type="text/css" href="static/jquery-easyui-1.5.2/themes/default/easyui.css">
+    <link rel="stylesheet" type="text/css" href="static/jquery-easyui-1.5.2/themes/icon.css">
+    <link rel="stylesheet" type="text/css" href="static/jquery-easyui-1.5.2/demo.css">
+    <link rel="stylesheet" type="text/css" href="static/jquery-easyui-1.5.2/themes/color.css">
+    <script type="text/javascript" src="static/jquery-easyui-1.5.2/jquery.min.js"></script>
+    <script type="text/javascript" src="static/jquery-easyui-1.5.2/jquery.easyui.min.js"></script>
+    <script type="text/javascript" src="static/jquery-easyui-1.5.2/locale/easyui-lang-zh_CN.js"></script>
+    <script>
+        var url;
+        function deletePerson() {
+            var row = $('#dg').datagrid('getSelected');
+            if (row) {
+                $.messager.confirm("系统提示", "您确定要删除这条记录吗?", function (r) {
+                    if (r) {
+                        $.post('deletePerson', {delId: row.id}, function (result) {
+                            if (result.success) {
+                                $.messager.alert("系统提示", "已成功删除这条记录!");
+                                $("#dg").datagrid("reload");
+                            } else {
+                                $.messager.alert("系统提示", result.errorMsg);
+                            }
+                        }, 'json');
+                    }
+                });
+            }
+        }
+
+        function newPerson() {
+            $("#dlg").dialog('open').dialog('setTitle', '添加用户');
+            $('#fm').form('clear');
+            url = 'newPerson';
+        }
+
+
+        function editPerson() {
+            var row = $('#dg').datagrid('getSelected');
+            if (row) {
+                $("#dlg").dialog('open').dialog('setTitle', '编辑用户');
+                $('#fm').form('load', row);
+                url = 'updatePerson?id=' + row.id;
+            }
+        }
+
+
+        function savePerson() {
+            $('#fm').form('submit', {
+                url: url,
+                onSubmit: function () {
+                    return $(this).form('validate');
+                },
+                success: function (result) {
+                    var result = eval('(' + result + ')');
+                    if (result.errorMsg) {
+                        $.messager.alert("系统提示", result.errorMsg);
+                        return;
+                    } else {
+                        $.messager.alert("系统提示", "保存成功");
+                        $('#dlg').dialog('close');
+                        $("#dg").datagrid("reload");
+                    }
+                }
+            });
+        }
+
+    </script>
+</head>
+<body>
+<table id="dg" title="用户管理" class="easyui-datagrid" style="width:700px;height:350px"
+       url="listPersons"
+       toolbar="#toolbar" pagination="true"
+       rownumbers="true" fitColumns="true" singleSelect="true">
+    <thead>
+        <tr>
+            <th field="id" width="50" hidden="true">编号</th>
+            <th field="name" width="50">姓名</th>
+            <th field="age" width="50">年龄</th>
+            <!--<th field="birth" width="50">出生日期</th>-->
+            <th field="email" width="50">email</th>
+        </tr>
+    </thead>
+</table>
+<div id="toolbar">
+    <a href="javascript:void(0)" class="easyui-linkbutton" iconCls="icon-add" plain="true" onclick="newPerson()">添加用户</a>
+    <a href="javascript:void(0)" class="easyui-linkbutton" iconCls="icon-edit" plain="true" onclick="editPerson()">编辑用户</a>
+    <a href="javascript:void(0)" class="easyui-linkbutton" iconCls="icon-remove" plain="true" onclick="deletePerson()">删除用户</a>
+</div>
+
+<div id="dlg" class="easyui-dialog" style="width:400px;height:250px;padding:10px 20px"
+     closed="true" buttons="#dlg-buttons">
+    <div class="ftitle">用户信息</div>
+    <form id="fm" method="post">
+        <table cellspacing="10px;">
+            <div class="fiteam">
+                <label>姓&nbsp;&nbsp;名：</label>
+                <input name="name" class="easyui-validatebox" required="true" />
+            </div>
+            <div class="fiteam">
+                <label>年&nbsp;&nbsp;龄：</label>
+                <input name="age" class="easyui-validatebox" />
+            </div>
+            <!--<div class="fiteam">
+                <label>生&nbsp;&nbsp;日：</label>
+                <input name="birth" class="easyui-validatebox" validType="date" />
+            </div>-->
+            <div class="fiteam">
+                <label>email：</label>
+                <input name="email" class="easyui-validatebox" validType="email" />
+            </div>
+        </table>
+    </form>
+</div>
+
+<div id="dlg-buttons">
+    <a href="javascript:void(0)" class="easyui-linkbutton" iconCls="icon-ok" onclick="savePerson()">保存</a>
+    <a href="javascript:void(0)" class="easyui-linkbutton" iconCls="icon-cancel" onclick="$('#dlg').dialog('close')">关闭</a>
+</div>
+</body>
+</html>
